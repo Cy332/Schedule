@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Day style -->
+    <style name="dayStyle">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">#e9e9e9</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <!-- Number style -->
+    <style name="numb">
+        <item name="android:layout_width">20dp</item>
+        <item name="android:layout_height">70dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:background">#e9e9e9</item>
+    </style>
+
+    <!-- Dimen values -->
+    <dimen name="text_width">40dp</dimen>
+    <dimen name="text_height">130dp</dimen>
+    <dimen name="text_size">10sp</dimen>
+
+    <!-- Class style -->
+    <style name="Class">
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_width">42dp</item>
+        <item name="android:layout_height">130dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_rowSpan">2</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- Custom dialog style -->
+    <style name="MyModelSetting" parent="Theme.AppCompat">
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+</resources>
