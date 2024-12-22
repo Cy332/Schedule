@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,251 +17,178 @@ import android.widget.GridLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
-import com.example.schedule.Classes;
-import com.example.schedule.DBHelper;
-import com.example.schedule.Detail;
-import com.example.schedule.DialogModal;
-import com.example.schedule.R;
-import com.example.schedule.utils;
-
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnTouchListener {
 
-    public final String DB_NAME = "classes_db.db";
-    public final String TABLE_NAME = "classes_db";
+    public static final String DB_NAME = "classes_db.db";
+    public static final String TABLE_NAME = "classes_db";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        getSupportActionBar().hide();
 
+        // 初始化 Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        //拿到数据库对象，为了读取数据
+        // 初始化資料庫
         DBHelper dbHelper = new DBHelper(MainActivity.this, DB_NAME, null, 1);
 
-        //动态渲染课程框
+        // 動態渲染課程表框架
         framework();
 
-        //将数据库课程渲染到课程框
+        // 將資料庫中的課程數據映射到課程表
         applyDraw(dbHelper);
-
     }
 
+    // 根據星期選擇對應的 GridLayout
     public GridLayout LayoutColumn(int i) {
-
-        GridLayout gridLayout = findViewById(R.id.d1);
-
         switch (i) {
-            case 1: {
-                gridLayout = findViewById(R.id.d1);
-                break;
-            }
-            case 2: {
-                gridLayout = findViewById(R.id.d2);
-                break;
-            }
-            case 3: {
-                gridLayout = findViewById(R.id.d3);
-                break;
-            }
-            case 4: {
-                gridLayout = findViewById(R.id.d4);
-                break;
-            }
-            case 5: {
-                gridLayout = findViewById(R.id.d5);
-                break;
-            }
-            case 6: {
-                gridLayout = findViewById(R.id.d6);
-                break;
-            }
-            case 7: {
-                gridLayout = findViewById(R.id.d7);
-                break;
-            }
+            case 1: return findViewById(R.id.d1);
+            case 2: return findViewById(R.id.d2);
+            case 3: return findViewById(R.id.d3);
+            case 4: return findViewById(R.id.d4);
+            case 5: return findViewById(R.id.d5);
+            case 6: return findViewById(R.id.d6);
+            case 7: return findViewById(R.id.d7);
+            default: return findViewById(R.id.d1);
         }
-        return gridLayout;
     }
 
+    // 渲染課程表格框架
     public void framework() {
-
-        GridLayout gridLayout;
         int id = 1;
+        for (int i = 1; i <= 7; i++) {
+            GridLayout gridLayout = LayoutColumn(i);
+            for (int j = 1; j < 10; j += 2) {
+                TextView textView = new TextView(this);
+                textView.setId(id++);
+                textView.setText("");
+                textView.setMaxLines(5);
+                textView.setEllipsize(TextUtils.TruncateAt.END);
+                textView.setBackgroundColor(Color.parseColor("#F0FFFF"));
+                textView.setGravity(Gravity.CENTER);
 
-        for (int i = 1; i < 8; i++) {
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                params.rowSpec = GridLayout.spec(j, 2, 1);
+                params.setMargins(5, 10, 5, 10);
+                params.width = GridLayout.LayoutParams.MATCH_PARENT;
+                params.height = 0;
 
-            gridLayout = LayoutColumn(i);
-
-            for (int j = 1; j < 10; j +=2) {
-                TextView textView1 = new TextView(this);
-
-                textView1.setId(id++);
-                textView1.setText("");
-                textView1.setMaxLines(5);
-                textView1.setEllipsize(TextUtils.TruncateAt.END);
-                textView1.setBackgroundColor(Color.parseColor("#F0FFFF"));
-                textView1.setGravity(Gravity.CENTER);
-
-
-                GridLayout.LayoutParams params1 = new GridLayout.LayoutParams();
-                params1.rowSpec = GridLayout.spec( j, 2,1);
-                params1.setMargins(5,10,5,10);
-                params1.width = GridLayout.LayoutParams.MATCH_PARENT;
-                params1.height = 0;
-
-                gridLayout.addView(textView1, params1);
+                gridLayout.addView(textView, params);
             }
-
         }
-
     }
 
+    // 渲染課程到課程表中
     public void applyDraw(DBHelper dbHelper) {
-
-        //从数据库拿到课程数据保存在链表
         List<Classes> classes = query(dbHelper);
 
         for (Classes aClass : classes) {
-            //第几节课
-            int i = Integer.parseInt(aClass.getC_time().charAt(0) + "");
+            try {
+                // 檢查 c_time 是否格式正確
+                String cTime = aClass.getC_time();
+                if (TextUtils.isEmpty(cTime) || !Character.isDigit(cTime.charAt(0))) {
+                    Log.w("applyDraw", "Invalid c_time format: " + cTime);
+                    continue;
+                }
 
-            //星期几
-            int j = utils.getDay(aClass.getC_day());
+                // 第幾節課
+                int i = Integer.parseInt(cTime.charAt(0) + "");
+                // 星期幾
+                int j = utils.getDay(aClass.getC_day());
 
-            //获取此课程对应TextView的id
-            TextView Class = findViewById((j - 1) * 5 + ((i - 1)/2 + 1));
+                // 計算 TextView 的 ID
+                int textViewId = (j - 1) * 5 + ((i - 1) / 2 + 1);
+                TextView classTextView = findViewById(textViewId);
+                if (classTextView == null) {
+                    Log.e("applyDraw", "TextView not found for id: " + textViewId);
+                    continue;
+                }
 
+                // 映射課程數據
+                classTextView.setText(aClass.getC_name());
+                classTextView.setOnTouchListener(this);
 
-            //课程表信息映射出来
-            Class.setText(aClass.getC_name());
-
-            //触碰此课程框触发
-            Class.setOnTouchListener(this);
-
+            } catch (NumberFormatException e) {
+                Log.e("applyDraw", "Error parsing c_time: " + aClass.getC_time(), e);
+            } catch (Exception e) {
+                Log.e("applyDraw", "Unexpected error while processing class: " + aClass.getC_name(), e);
+            }
         }
-
     }
 
+    // 從資料庫查詢課程數據
     @SuppressLint("Range")
     public List<Classes> query(DBHelper dbHelper) {
-
         List<Classes> classes = new ArrayList<>();
-        // 通过DBHelper类获取一个读写的SQLiteDatabase对象
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        // 参数1：table_name
-        // 参数2：columns 要查询出来的列名。相当于 select  *** from table语句中的 ***部分
-        // 参数3：selection 查询条件字句，在条件子句允许使用占位符“?”表示条件值
-        // 参数4：selectionArgs ：对应于 selection参数 占位符的值
-        // 参数5：groupby 相当于 select *** from table where && group by ... 语句中 ... 的部分
-        // 参数6：having 相当于 select *** from table where && group by ...having %%% 语句中 %%% 的部分
-        // 参数7：orderBy ：相当于 select  ***from ？？  where&& group by ...having %%% order by@@语句中的@@ 部分，如： personid desc（按person 降序）
         Cursor cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
 
-        // 将游标移到开头
         cursor.moveToFirst();
-
-        while (!cursor.isAfterLast()) { // 游标只要不是在最后一行之后，就一直循环
-
+        while (!cursor.isAfterLast()) {
             if (!cursor.getString(cursor.getColumnIndex("c_day")).equals("0")) {
-                Classes Class = new Classes();
-
-                Class.setC_id(Integer.parseInt(cursor.getString(cursor.getColumnIndex("c_id"))));
-                Class.setC_name(cursor.getString(cursor.getColumnIndex("c_name")));
-                Class.setC_time(cursor.getString(cursor.getColumnIndex("c_time")));
-                Class.setC_day(cursor.getString(cursor.getColumnIndex("c_day")));
-
-                classes.add(Class);
+                Classes aClass = new Classes();
+                aClass.setC_id(Integer.parseInt(cursor.getString(cursor.getColumnIndex("c_id"))));
+                aClass.setC_name(cursor.getString(cursor.getColumnIndex("c_name")));
+                aClass.setC_time(cursor.getString(cursor.getColumnIndex("c_time")));
+                aClass.setC_day(cursor.getString(cursor.getColumnIndex("c_day")));
+                classes.add(aClass);
             }
-
-            // 将游标移到下一行
             cursor.moveToNext();
-
         }
 
+        cursor.close();
         db.close();
         return classes;
     }
 
+    // 初始化選單
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
         getMenuInflater().inflate(R.menu.menu, menu);
 
-
-        MenuItem menuItem=menu.findItem(R.id.action_menu);
-
-        menuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, DialogModal.class);
-                startActivity(intent);
-                return true;
-            }
+        MenuItem menuItem = menu.findItem(R.id.action_menu);
+        menuItem.setOnMenuItemClickListener(menuItem1 -> {
+            Intent intent = new Intent(MainActivity.this, DialogModal.class);
+            startActivity(intent);
+            return true;
         });
 
-        return  super.onCreateOptionsMenu(menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
+    // 處理觸摸事件
     @SuppressLint("Range")
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+            TextView textView = (TextView) view;
 
+            DBHelper dbHelper = new DBHelper(MainActivity.this, DB_NAME, null, 1);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            Cursor cursor = db.query(TABLE_NAME, null, "c_id=?", new String[]{String.valueOf(textView.getId())}, null, null, null);
 
-        switch (motionEvent.getAction()){
-            case MotionEvent.ACTION_DOWN: {
-                TextView textView = (TextView) view;
-
-
-                DBHelper dbHelper = new DBHelper(MainActivity.this, DB_NAME, null, 1);
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-                // 参数1：table_name
-                // 参数2：columns 要查询出来的列名。相当于 select  *** from table语句中的 ***部分
-                // 参数3：selection 查询条件字句，在条件子句允许使用占位符“?”表示条件值
-                // 参数4：selectionArgs ：对应于 selection参数 占位符的值
-                // 参数5：groupby 相当于 select *** from table where && group by ... 语句中 ... 的部分
-                // 参数6：having 相当于 select *** from table where && group by ...having %%% 语句中 %%% 的部分
-                // 参数7：orderBy ：相当于 select  ***from ？？  where&& group by ...having %%% order by@@语句中的@@ 部分，如： personid desc（按person 降序）
-//        Cursor cursor = db.query(TABLE_NAME, null, "c_id=?", new String[]{String.valueOf(textView.getId())}, null, null, null);
-                Cursor cursor = db.query(TABLE_NAME, null, "c_id=?", new String[]{String.valueOf(textView.getId())}, null, null, null);
-
-                // 将游标移到开头
-                cursor.moveToFirst();
-                if (!cursor.isAfterLast()) {
-                    Classes Class = new Classes();
-                    System.out.println(textView.getId());
-                    System.out.println(cursor.getString(cursor.getColumnIndex("c_name")));
-
-                    Intent intent = new Intent();
-                    intent.putExtra("name", cursor.getString(cursor.getColumnIndex("c_name")));
-                    intent.putExtra("time", cursor.getString(cursor.getColumnIndex("c_time")));
-                    intent.putExtra("day", cursor.getString(cursor.getColumnIndex("c_day")));
-                    intent.putExtra("teacher", cursor.getString(cursor.getColumnIndex("c_teacher")));
-                    intent.setClass(MainActivity.this, Detail.class);
-                    startActivity(intent);
-
-                }
-                return true;
-            }
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL: {
-                Intent intent = new Intent(this, MainActivity.class);
+            cursor.moveToFirst();
+            if (!cursor.isAfterLast()) {
+                Intent intent = new Intent();
+                intent.putExtra("name", cursor.getString(cursor.getColumnIndex("c_name")));
+                intent.putExtra("time", cursor.getString(cursor.getColumnIndex("c_time")));
+                intent.putExtra("day", cursor.getString(cursor.getColumnIndex("c_day")));
+                intent.putExtra("teacher", cursor.getString(cursor.getColumnIndex("c_teacher")));
+                intent.setClass(MainActivity.this, Detail.class);
                 startActivity(intent);
-                break;
             }
-        }
 
+            cursor.close();
+            db.close();
+            return true;
+        }
         return false;
     }
-
 }

@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Day style -->
-    <style name="dayStyle">
+    <style name="DayStyle">
         <item name="android:layout_width">48dp</item>
         <item name="android:layout_height">30dp</item>
         <item name="android:layout_gravity">center</item>
@@ -12,7 +12,7 @@
     </style>
 
     <!-- Number style -->
-    <style name="numb">
+    <style name="NumberStyle">
         <item name="android:layout_width">20dp</item>
         <item name="android:layout_height">70dp</item>
         <item name="android:gravity">center</item>
@@ -27,13 +27,12 @@
     <dimen name="text_size">10sp</dimen>
 
     <!-- Class style -->
-    <style name="Class">
+    <style name="ClassStyle">
         <item name="android:layout_margin">5dp</item>
-        <item name="android:layout_width">42dp</item>
-        <item name="android:layout_height">130dp</item>
+        <item name="android:layout_width">@dimen/text_width</item>
+        <item name="android:layout_height">@dimen/text_height</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:gravity">center</item>
-        <item name="android:layout_rowSpan">2</item>
         <item name="android:textSize">12sp</item>
     </style>
 
@@ -44,5 +43,13 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
+    //新增搭
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here -->
+        <item name="colorPrimary">#6200EE</item>
+        <item name="colorPrimaryDark">#3700B3</item>
+        <item name="colorAccent">#03DAC5</item>
+    </style>
+
 
 </resources>
